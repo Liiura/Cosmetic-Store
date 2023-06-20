@@ -1,0 +1,64 @@
+﻿@using BlazorAppShared.DTO;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorApp.Interfaces;
+@inject SweetAlertService Swal;
+@inject IClientService clientService;
+@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+@code{
+    private string GenerateVisitorId()
+    {
+        var visitorId = Guid.NewGuid().ToString();
+        return visitorId;
+    }
+    private async Task<string> GetCookie(string cookieName)
+    {
+        return await JSRuntime.InvokeAsync<string>("eval", $"document.cookie.split(';').find(c => c.trim().startsWith('{cookieName}='))?.split('=')[1]");
+    }
+
+    private async Task SetCookie(string cookieName, string cookieValue, int expirationDays)
+    {
+        await JSRuntime.InvokeVoidAsync("eval", $"document.cookie = '{cookieName}=' + encodeURIComponent('{cookieValue}') + ';expires=' + new Date(Date.now() + {expirationDays} * 24 * 60 * 60 * 1000).toUTCString() + ';path=/';");
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var visitorCookie = await GetCookie("visitorId");
+        if (string.IsNullOrEmpty(visitorCookie))
+        {
+            var visitorId = GenerateVisitorId();
+            await SetCookie("visitorId", visitorId, 365);
+            await CreateClient();
+        }
+    }
+    private async Task CreateClient()
+    {
+        var visitorCookie = await GetCookie("visitorId");
+        var clientDTO = new CreateEditClientDTO { Name = visitorCookie };
+        var result = await clientService.CreateClient(clientDTO);
+        if(result.Status >= 400)
+        {
+            await Swal.FireAsync(
+         "Client",
+         result.Message,
+         SweetAlertIcon.Error
+         );
+        }
+    }
+
+
+}

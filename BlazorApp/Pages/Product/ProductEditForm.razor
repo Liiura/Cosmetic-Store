@@ -1,0 +1,123 @@
+﻿@page "/Cosmetic"
+@page "/Cosmetic/{productId:int}"
+@using BlazorAppShared.DTO;
+@using BlazorAppShared;
+@using BlazorApp.Interfaces;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@inject SweetAlertService Swal;
+@inject IProductService productService;
+@inject ISellDepartmentService sellDepartmentService;
+@inject IColorService colorService;
+@inject NavigationManager navigationManager
+@if( sellDepartments != null && colors != null)
+{
+    <h3>@title</h3>
+    <EditForm Model="productToSave" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <InputText class="form-control" @bind-Value="productToSave.Name"></InputText>
+            <ValidationMessage For="@(() => productToSave.Name )"></ValidationMessage>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Department</label>
+            <InputSelect class="form-control" @bind-Value="productToSave.SellDepartmentId">
+                <option value="null">Select option</option>
+                @foreach (var item in sellDepartments)
+                {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => productToSave.SellDepartmentId )"></ValidationMessage>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Quantity</label>
+            <InputNumber class="form-control" @bind-Value="productToSave.Quantity"></InputNumber>
+            <ValidationMessage For="@(() => productToSave.Quantity )"></ValidationMessage>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Price</label>
+            <InputNumber class="form-control" @bind-Value="productToSave.Price"></InputNumber>
+            <ValidationMessage For="@(() => productToSave.Price )"></ValidationMessage>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Colors</label>
+            <CheckBoxList Data="@colors" TextField="@((item) => item.Name)" ValueField="@((item) => item.Id)" SelectedValues="selectedColors " />
+        </div>
+        <button type="submit" class="btn btn-success">@btnText</button>
+        <a class="btn btn-warning" href="Cosmetics">Back</a>
+    </EditForm>
+}
+else
+{
+    <h3>Loading form...</h3>
+}
+
+@code {
+    [Parameter]
+    public int? productId { get; set; } = null;
+    string title = string.Empty;
+    string btnText = string.Empty;
+    ProductDTO product = new ProductDTO();
+    CreateUpdateProductDTO productToSave = new CreateUpdateProductDTO();
+    List<ColorDTO>? colors =null;
+    List<SellDepartmentDTO>? sellDepartments = null;
+    List<string> selectedColors = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(productId != null)
+        {
+            var response = await productService.GetProductById(productId.Value);
+            if(response.Status >= 400)
+            {
+                await Swal.FireAsync("Product", response.Message,SweetAlertIcon.Error);
+            }
+            else
+            {
+                product = response.Value;
+                btnText = "Update";
+                title = "Update Cosmetic";
+                selectedColors = response.Value.ColorDTOs != null ? response.Value.ColorDTOs.Select(x => x.Id.ToString()).ToList() : new List<string>();
+                productToSave.Name = response?.Value?.Name;
+                productToSave.Quantity = response?.Value?.Quantity;
+                productToSave.Price = response?.Value?.Price;
+                productToSave.SellDepartmentId = response?.Value?.SellDepartmentId;
+            }
+        }
+        else
+        {
+            btnText = "Create";
+            title = "Create Cosmetic";
+        }
+        colors = await colorService.GetAllColors();
+        sellDepartments = await sellDepartmentService.GetSellDepartments();
+    }
+    private async Task OnValidSubmit()
+    {
+        var responseEmployee = new ResponsePayload<ProductDTO>();
+        productToSave.Colors = selectedColors.Select(x => new ColorProductDTO { ColorId = Convert.ToInt32(x) }).ToList();
+        if(productId == null)
+        {
+            responseEmployee = await productService.CreateProduct(productToSave);
+        }
+        else
+        {
+            responseEmployee = await productService.UpdateProduct(productToSave,productId.Value);
+            productToSave.Colors = responseEmployee.Value.ColorDTOs != null ? responseEmployee.Value.ColorDTOs.Select(x => new ColorProductDTO { ColorId = x.Id.Value }).ToList() : new List<ColorProductDTO>();
+            productToSave.Name = responseEmployee.Value.Name;
+            productToSave.Quantity = responseEmployee.Value.Quantity;
+            productToSave.Price = responseEmployee.Value.Price;
+            productToSave.SellDepartmentId = responseEmployee.Value.SellDepartmentId;
+        }
+        if (responseEmployee.Status.Value >= 200 && responseEmployee.Status.Value < 300)
+        {
+            await Swal.FireAsync("Product", responseEmployee.Message, SweetAlertIcon.Success);
+            navigationManager.NavigateTo("/Cosmetics");
+        }
+        else
+        {
+            await Swal.FireAsync("Product", responseEmployee.Message, SweetAlertIcon.Error);
+        }
+    }
+}

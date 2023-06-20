@@ -1,0 +1,6 @@
+﻿CREATE TABLE [dbo].[ProductColorDetail]
+(
+	[Id] INT IDENTITY(1,1)  NOT NULL PRIMARY KEY, 
+    [ProductId] INT FOREIGN KEY REFERENCES Product(Id) NOT NULL, 
+    [ColorId] INT FOREIGN KEY REFERENCES Color(Id) NOT NULL
+)

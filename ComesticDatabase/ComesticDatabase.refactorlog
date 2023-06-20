@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Operations Version="1.0" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02">
+  <Operation Name="Rename Refactor" Key="5bcdef95-bd29-409b-ac78-43bdb9103164" ChangeDateTime="06/17/2023 02:24:36">
+    <Property Name="ElementName" Value="[dbo].[ProductColorDetail].[Name]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[ProductColorDetail]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="ProductId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="0a39c23b-3ec4-4ae5-b453-3a91ff088a84" ChangeDateTime="06/17/2023 02:29:19">
+    <Property Name="ElementName" Value="[dbo].[ProductColorDetail].[ClientId]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[ProductColorDetail]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="ColorId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="a62a4770-b8b9-48c8-b9e1-94bcd1b6d34f" ChangeDateTime="06/17/2023 04:20:10">
+    <Property Name="ElementName" Value="[dbo].[ClientSeparationProductDetail].[ClientS]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[ClientSeparationProductDetail]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="ClientSeparationProductId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="55ea9915-c53e-493d-804f-d4fd61699983" ChangeDateTime="06/17/2023 04:23:33">
+    <Property Name="ElementName" Value="[dbo].[ClientSeparationProduct].[SeparatedDate]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[ClientSeparationProduct]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="CreatedDate" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="72638574-1220-4fc9-80b3-6547fa8dfdae" ChangeDateTime="06/18/2023 23:09:37">
+    <Property Name="ElementName" Value="[dbo].[Promotion].[MaximalAmount]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Promotion]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Amount" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="92c1c501-11a7-4f48-ab6e-f6c74c15e352" ChangeDateTime="06/18/2023 23:22:12">
+    <Property Name="ElementName" Value="[dbo].[Promotion].[Amount]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Promotion]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="MaximalAmount" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="5f33f8c2-e557-4f16-b98a-ae34e89eadaa" ChangeDateTime="06/19/2023 02:43:52">
+    <Property Name="ElementName" Value="[dbo].[Promotion].[MaximalAmount]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Promotion]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Maximal" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="a95d87a7-5cfb-4c52-92b1-1175aa77b018" ChangeDateTime="06/19/2023 02:43:55">
+    <Property Name="ElementName" Value="[dbo].[Promotion].[MinimalAmount]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Promotion]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Minimal" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="ddf3fa1a-fafc-4d54-8ad6-92f96780292c" ChangeDateTime="06/19/2023 02:45:49">
+    <Property Name="ElementName" Value="[dbo].[Promotion].[Maximal]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Promotion]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="MaximalAmount" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="8a704a2f-c250-4eb0-8885-c10e721b8b27" ChangeDateTime="06/19/2023 02:45:53">
+    <Property Name="ElementName" Value="[dbo].[Promotion].[Minimal]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Promotion]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="MinimalAmount" />
+  </Operation>
+</Operations>

@@ -1,0 +1,64 @@
+﻿@using BlazorAppShared.DTO;
+@using BlazorApp.Interfaces;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@inject SweetAlertService Swal;
+@inject IProductService productService;
+<h3>Cosmetics</h3>
+@if(products == null)
+{
+    <strong>Loading data...</strong>
+}
+else
+{
+    <table class="table table-dark table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Name</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Price</th>
+                <th scope="col">Department</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr>
+                    <th scope="row">@product.Id</th>
+                    <td>@product.Name</td>
+                    <td>@product.Quantity</td>
+                    <td>@product.Price</td>
+                    <td>@product.SellDepartmentName</td>
+                    <td>
+                        <button type="button" class="btn btn-danger" @onclick="(() => DeleteProduct(product.Id.Value))">Remove</button>
+                        <a class="btn btn-primary" href="cosmetic/@product.Id">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private List<ProductDTO>? products = null;
+    protected override async Task OnInitializedAsync()
+    {
+        products = await productService.GetAllProducts();
+    }
+    private async Task DeleteProduct(int productId)
+    {
+        var resultOptions = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Delete Product",
+                Text = "Are you sure you want to delete this product ?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+        if (resultOptions.IsConfirmed)
+        {
+            var employeeDeleteResponse = await productService.DeleteProduct(productId);
+            await Swal.FireAsync("Product",employeeDeleteResponse.Message,employeeDeleteResponse.Status >= 400 ? SweetAlertIcon.Error : SweetAlertIcon.Success);
+            products = products.FindAll(x => x.Id != productId);
+        }
+    }
+}
