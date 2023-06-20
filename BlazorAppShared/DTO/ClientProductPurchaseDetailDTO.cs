@@ -17,11 +17,11 @@ namespace BlazorAppShared.DTO
     public class CreateEditClientProductPurchaseDetailDTO
     {
         [Required]
-        public int? QuantityPurchase { get; set; }
+        public int QuantityPurchase { get; set; } = 1;
         [Required]
-        public decimal? CurrentProductPrice { get; set; }
+        public decimal CurrentProductPrice { get; set; }
         [Required]
-        public int? ProductId { get; set; }
+        public int ProductId { get; set; }
     }
     public class ClientProductPurchaseDTO
     {

@@ -196,8 +196,8 @@ namespace BlazorAppServer.Repositories
                             {
                                 var clientProductPurchaseDetailDTO = new ClientProductPurchaseDetail
                                 {
-                                    ProductId = item.ProductId.Value,
-                                    QuantityPurchase = item.QuantityPurchase.Value,
+                                    ProductId = item.ProductId,
+                                    QuantityPurchase = item.QuantityPurchase,
                                     CurrentProductPrice = item.CurrentProductPrice,
                                     ClientProductPurchaseId = purchase.Id
                                 };

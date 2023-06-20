@@ -1,0 +1,49 @@
+﻿@page "/Purchase"
+@using BlazorAppShared.DTO
+@using BlazorApp.Interfaces;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@inject SweetAlertService Swal;
+@inject IClientService clientService;
+@inject IProductService productService;
+<h3>Purchase Cosmetics</h3>
+@if (products == null)
+{
+    <strong>Loading data...</strong>
+}
+else
+{
+ @foreach (var item in products)
+    {
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">@item.Name</h5>
+                <p class="card-text"><strong>Price</strong> @item.Price</p>
+                <EditForm Model="purchaseProductDetail" OnValidSubmit="OnValidSubmit">
+                    <DataAnnotationsValidator></DataAnnotationsValidator>
+                    <div class="mb-3">
+                        <input type="hidden" id="CurrentProductPrice_@purchaseProductDetail.ProductId" name="CurrentProductPrice" value="@purchaseProductDetail.CurrentProductPrice" />
+                        <input type="hidden" id="ProductId_@purchaseProductDetail.ProductId" name="ProductId" value="@purchaseProductDetail.ProductId" />
+                        <label class="form-label">Quantity</label>
+                        <InputNumber class="form-control" @bind-Value="purchaseProductDetail.QuantityPurchase" EnableMinMax="true" min ="1" max ="@item.Quantity" ></InputNumber>
+                        <ValidationMessage For="@(() => purchaseProductDetail.QuantityPurchase)"></ValidationMessage>
+                    </div>
+                </EditForm>
+                <button type="submit" class="btn btn-success">Purchase</button>
+            </div>
+        </div>
+    }   
+}
+
+@code {
+    List<ProductDTO>? products = null;
+    CreateEditClientProductPurchaseDetailDTO purchaseProductDetail = new CreateEditClientProductPurchaseDetailDTO();
+    int quantityToPurchase = 1;
+    protected override async Task OnInitializedAsync()
+    {
+        products = await productService.GetAllProducts();
+    }
+    private async Task OnValidSubmit()
+    {
+        
+    }
+}
