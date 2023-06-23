@@ -29,11 +29,11 @@ namespace BlazorAppServer.Controllers
         }
         [HttpPost]
         [Route("SeparateProducts")]
-        public async Task<IActionResult> SeparateProducts(List<CreateEditClientSeparationProductDetailDTO> clientSeparationProductDetailDTOs, int clientId)
+        public async Task<IActionResult> SeparateProducts(List<CreateEditClientSeparationProductDetailDTO> clientSeparationProductDetailDTOs, int clientId,int? promotionId)
         {
             if (ModelState.IsValid)
             {
-                var payload = await _clientRepository.SeparateProducts(clientSeparationProductDetailDTOs,clientId);
+                var payload = await _clientRepository.SeparateProducts(clientSeparationProductDetailDTOs,clientId, promotionId);
                 return StatusCode(payload.Status.Value, payload);
             }
             else
@@ -43,11 +43,11 @@ namespace BlazorAppServer.Controllers
         }
         [HttpPost]
         [Route("PurchaseProduct")]
-        public async Task<IActionResult> PurchaseProduct(List<CreateEditClientProductPurchaseDetailDTO> clientProductPurchaseDetailDTOs, int clientId) {
+        public async Task<IActionResult> PurchaseProduct(List<CreateEditClientProductPurchaseDetailDTO> clientProductPurchaseDetailDTOs, int clientId, int? separatePlanId) {
 
             if (ModelState.IsValid)
             {
-                var payload = await _clientRepository.PurchaseProduct(clientProductPurchaseDetailDTOs, clientId);
+                var payload = await _clientRepository.PurchaseProduct(clientProductPurchaseDetailDTOs, clientId,separatePlanId);
                 return StatusCode(payload.Status.Value, payload);
             }
             else
@@ -57,9 +57,9 @@ namespace BlazorAppServer.Controllers
         }
         [HttpGet]
         [Route("GetClient")]
-        public async Task<IActionResult> GetClient(int clientId)
+        public async Task<IActionResult> GetClient(string clientName)
         {
-            var payload = await _clientRepository.GetClient(clientId);
+            var payload = await _clientRepository.GetClient(clientName);
             return StatusCode(payload.Status.Value, payload);
         }
         [HttpGet]

@@ -53,9 +53,9 @@ namespace BlazorApp.Services
             }
         }
 
-        public async Task<ResponsePayload<ClientDTO>> GetClient(int clientId)
+        public async Task<ResponsePayload<ClientDTO>> GetClient(string clientName)
         {
-            var result = await _httpClient.GetFromJsonAsync<ResponsePayload<ClientDTO>>("/Client/GetClient?clientId=" + clientId);
+            var result = await _httpClient.GetFromJsonAsync<ResponsePayload<ClientDTO>>("/Client/GetClient?clientName=" + clientName);
             if (result.Status >= 200 && result.Status < 300)
             {
                 return result;
@@ -79,9 +79,9 @@ namespace BlazorApp.Services
             }
         }
 
-        public async Task<ResponsePayload> PurchaseProduct(List<CreateEditClientProductPurchaseDetailDTO> clientProductPurchaseDetailDTOs, int clientId)
+        public async Task<ResponsePayload> PurchaseProduct(List<CreateEditClientProductPurchaseDetailDTO> clientProductPurchaseDetailDTOs, int clientId, int? separatePlanId)
         {
-            var fetch = await _httpClient.PostAsJsonAsync("/Client/PurchaseProduct?clientId="+clientId, clientProductPurchaseDetailDTOs);
+            var fetch = await _httpClient.PostAsJsonAsync("/Client/PurchaseProduct?clientId="+clientId+"&separatePlanId="+separatePlanId, clientProductPurchaseDetailDTOs);
             var response = await fetch.Content.ReadFromJsonAsync<ResponsePayload>();
             if (response.Status >= 200 && response.Status < 300)
             {
@@ -93,9 +93,9 @@ namespace BlazorApp.Services
             }
         }
 
-        public async Task<ResponsePayload> SeparateProducts(List<CreateEditClientSeparationProductDetailDTO> clientSeparationProductDetailDTOs, int clientId)
+        public async Task<ResponsePayload> SeparateProducts(List<CreateEditClientSeparationProductDetailDTO> clientSeparationProductDetailDTOs, int clientId, int? promotionId)
         {
-            var fetch = await _httpClient.PostAsJsonAsync("/Client/SeparateProducts?clientId=" + clientId, clientSeparationProductDetailDTOs);
+            var fetch = await _httpClient.PostAsJsonAsync("/Client/SeparateProducts?clientId=" + clientId+ "&promotionId="+ promotionId, clientSeparationProductDetailDTOs);
             var response = await fetch.Content.ReadFromJsonAsync<ResponsePayload>();
             if (response.Status >= 200 && response.Status < 300)
             {

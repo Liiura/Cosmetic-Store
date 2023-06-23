@@ -21,6 +21,7 @@ builder.Services.AddScoped<IColorRepository, ColorRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 builder.Services.AddScoped<ISellDepartmentRepository, SellDepartmentRepository>();
+builder.Services.AddScoped<ISeparatePlanRepository, SeparatePlanRepository>();
 builder.Services.AddCors(options => {
     options.AddPolicy("newPolicy", app =>
     {

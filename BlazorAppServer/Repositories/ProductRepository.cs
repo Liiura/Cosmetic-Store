@@ -91,7 +91,7 @@ namespace BlazorAppServer.Repositories
             using(var context = _context)
             {
                 var response = new ResponsePayload<List<ProductDTO>>();
-                var allProducts = await context.Product.Select(x => new ProductDTO
+                var allProducts = await context.Product.Where(x => x.Quantity > 0 && x.ProductColorDetails.Count > 0).Select(x => new ProductDTO
                 {
                     Id = x.Id,
                     Name = x.Name,

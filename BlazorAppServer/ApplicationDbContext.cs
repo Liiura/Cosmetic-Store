@@ -20,5 +20,6 @@ namespace BlazorAppServer
         public DbSet<ClientSeparationProductDetail> ClientSeparationProductDetail { get; set; }
         public DbSet<ClientProductPurchaseDetail> ClientProductPurchaseDetail { get; set;}
         public DbSet<SellDepartment> SellDepartment { get; set; }
+        public DbSet<SeparatePlan> SeparatePlan { get; set; }
     }
 }

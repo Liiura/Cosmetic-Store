@@ -15,5 +15,6 @@ builder.Services.AddScoped<IColorService, ColorService>();
 builder.Services.AddScoped<IProductService, ProductService> ();
 builder.Services.AddScoped<IPromotionService, PromotionService>();
 builder.Services.AddScoped<ISellDepartmentService, SellDepartmentService>();
+builder.Services.AddScoped<ISeparatePlanService, SeparatePlanService>();
 builder.Services.AddSweetAlert2();
 await builder.Build().RunAsync();

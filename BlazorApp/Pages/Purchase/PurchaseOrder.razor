@@ -1,0 +1,92 @@
+﻿@page "/PurchaseOrder"
+@using BlazorAppShared.DTO
+@using BlazorApp.Interfaces;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using System.Text.Json;
+@inject SweetAlertService Swal;
+@inject IClientService clientService;
+@inject IProductService productService;
+@inject IJSRuntime JS;
+@inject ISeparatePlanService separatePlanService;
+@inject NavigationManager navigationManager
+<h3>Purchase Order</h3>
+@if (products == null)
+{
+    <strong>Loading data...</strong>
+}
+else
+{
+    <strong>Total: $@total</strong>
+    <p>Avaible Separation: 
+        @if(separatePlan != null)
+        {
+        <strong>@separatePlan.SeparatePlanName with this discount %@separatePlan.SeparatePlanPercentage</strong>
+        }
+        else
+        {
+            <strong>There is not an available separate plan for this purchase</strong>
+        }
+    </p>
+    <div class="row row-cols-1 row-cols-md-2">
+        @foreach (var item in products)
+        {
+            <div class="card" style="width: 18rem; margin-right: 5px; margin-bottom: 5px">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Name</h5>
+                    <hr style="margin-top: -3px" />
+                    <p class="card-text"><strong>Total:</strong>$@(item.Price*item.Quantity)</p>
+                    <p class="card-text">Quantity to purchase: @item.Quantity</p>
+                </div>
+            </div>
+        }
+    </div>
+    <button class="btn btn-success" type="button" @onclick = "CreatePurchaseOrder">Purchase</button>
+}
+
+@code {
+    List<ProductDTO>? products = null;
+    List<SeparatePlanDTO> separatePlans = new List<SeparatePlanDTO>();
+    SeparatePlanDTO? separatePlan = null;
+    decimal total = 0;
+    protected override async Task OnInitializedAsync()
+    {
+        string localStoragePurchaseOrderString = await JS.InvokeAsync<string>("localStorage.getItem", "purchaseOrder");
+        products = JsonSerializer.Deserialize<List<ProductDTO>>(localStoragePurchaseOrderString);
+        separatePlans = await separatePlanService.GetAllSeparatePlans();
+        if(products != null)
+        {
+            total = products.Sum(x => x.Quantity * x.Price);
+            separatePlan = separatePlans.LastOrDefault(x => total > x.SeparateValue);
+        }
+    }
+    private async Task CreatePurchaseOrder()
+    {
+        var visitorCookie = await GetCookie("visitorId");
+        var mapData = products.Select(x => new CreateEditClientProductPurchaseDetailDTO { CurrentProductPrice = x.Price, ProductId = x.Id.Value, QuantityPurchase = x.Quantity }).ToList();
+        var getClient = await clientService.GetClient(visitorCookie);
+        if(getClient.Status >= 200 && getClient.Status < 300)
+        {
+            var response = await clientService.PurchaseProduct(mapData,getClient.Value.Id.Value,separatePlan != null ? separatePlan.Id : null);
+            if (response.Status >= 200 && response.Status < 300)
+            {
+                await Swal.FireAsync("Purchase", response.Message, SweetAlertIcon.Success);
+                await JS.InvokeAsync<string>("localStorage.removeItem", "purchaseOrder");
+                navigationManager.NavigateTo("/PurchaseProducts");
+            }
+            else
+            {
+                await Swal.FireAsync("Client", getClient.Message, SweetAlertIcon.Error);
+
+            }
+        }
+        else
+        {
+            await Swal.FireAsync("Client", getClient.Message, SweetAlertIcon.Error);
+        }
+    }
+    public async Task<string> GetCookie(string cookieName)
+    {
+        return await JS.InvokeAsync<string>("eval", $"document.cookie.split(';').find(c => c.trim().startsWith('{cookieName}='))?.split('=')[1]");
+    }
+
+}

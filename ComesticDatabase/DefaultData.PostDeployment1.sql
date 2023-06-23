@@ -10,5 +10,6 @@ Post-Deployment Script Template
 --------------------------------------------------------------------------------------
 */
 INSERT INTO Color VALUES('Red',GETDATE()),('Blue',GETDATE()),('Yellow',GETDATE()),('Gray',GETDATE()),('Green',GETDATE())
-INSERT INTO Promotion VALUES('Promotion 1', GETDATE(),5, 100000,150000),('Promotion 2', GETDATE(),7, 150000,170000),('Promotion 3', GETDATE(),10, 150000,200000)
+INSERT INTO Promotion VALUES('Promotion 1', GETDATE(),5,150000, 100000),('Promotion 2', GETDATE(),7,170000, 150000),('Promotion 3', GETDATE(),10,200000, 150000)
 INSERT INTO SellDepartment VALUES('Department 1',GETDATE()),('Department 2',GETDATE()),('Department 3',GETDATE())
+INSERT INTO SeparatePlan VALUES('Separate Plan 1',200000,15),('Separate plan 2',100000,5),('Separate plan 3',500000,20)

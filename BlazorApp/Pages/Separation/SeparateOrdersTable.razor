@@ -1,0 +1,60 @@
+﻿@page "/CurrentSeparatedOrders"
+@using BlazorAppShared.DTO;
+@using BlazorApp.Interfaces
+@using CurrieTechnologies.Razor.SweetAlert2;
+@inject IClientService clientService
+@inject SweetAlertService Swal;
+@inject IJSRuntime JS;
+<h3>My Separations</h3>
+@if (separations == null)
+{
+    <strong>Loading data...</strong>
+}
+else
+{
+    <table class="table table-dark table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Separated date</th>
+                <th scope="col">Total Quantity Separed</th>
+                <th scope="col">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var separation in separations)
+            {
+                int? total = separation.ClientSeparationProductDetailDTOs.Sum(x => x.SeparatedQuantity);
+                decimal? amount = separation.ClientSeparationProductDetailDTOs.Sum(x => x.SeparatedQuantity * x.Price) * (1 - (separation.PromotionPercentage != null ? separation.PromotionPercentage / 100 : 0));
+
+                <tr>
+                    <th scope="row">@separation.Id</th>
+                    <td>@separation.SeparatedDate</td>
+                    <td>@total</td>
+                    <td>$@amount</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    List<ClientSeparationProductDTO>? separations = null;
+    protected override async Task OnInitializedAsync()
+    {
+        var visitorCookie = await GetCookie("visitorId");
+        var getClient = await clientService.GetClient(visitorCookie);
+        if (getClient.Status >= 200 && getClient.Status < 300)
+        {
+            separations = await clientService.GetAllSeparationProducts(getClient.Value.Id.Value);
+        }
+        else
+        {
+            await Swal.FireAsync("Client", getClient.Message, SweetAlertIcon.Error);
+        }
+    }
+    public async Task<string> GetCookie(string cookieName)
+    {
+        return await JS.InvokeAsync<string>("eval", $"document.cookie.split(';').find(c => c.trim().startsWith('{cookieName}='))?.split('=')[1]");
+    }
+}

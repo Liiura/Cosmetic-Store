@@ -56,10 +56,12 @@ namespace BlazorAppServer.Repositories
                     Id = x.Id,
                     AvailablePromotion = x.Promotion != null ? x.Promotion.PromotionName : null,
                     ClientId = clientId,
+                    PromotionPercentage = x.Promotion != null ? x.Promotion.PromotionPercentage : null,
                     ClientSeparationProductDetailDTOs = x.ClientSeparationProductDetails != null ? x.ClientSeparationProductDetails.Select(x => new ClientSeparationProductDetailDTO {
                     Id = x.Id,
                     ProductId = x.ProductId,
-                    SeparatedQuantity = x.SeparatedQuantity
+                    SeparatedQuantity = x.SeparatedQuantity,
+                    Price = x.Product.Price
                     }).ToList() : new List<ClientSeparationProductDetailDTO>(),
                     SeparatedDate = x.CreatedDate
                 }).ToListAsync();
@@ -90,13 +92,13 @@ namespace BlazorAppServer.Repositories
            }
         }
 
-        async Task<ResponsePayload<ClientDTO>> IClientRepository.GetClient(int clientId)
+        async Task<ResponsePayload<ClientDTO>> IClientRepository.GetClient(string clientName)
         {
             using(var context = _context)
             {
                 var response = new ResponsePayload<ClientDTO>();
                 var clientDTO = new ClientDTO();
-                var client =await context.Client.FirstOrDefaultAsync(x => x.Id == clientId);
+                var client =await context.Client.FirstOrDefaultAsync(x => x.Name == clientName);
                 if(client != null)
                 {
                     clientDTO.Id = client.Id;
@@ -125,6 +127,7 @@ namespace BlazorAppServer.Repositories
                     purchaseDTO.Id = purchase.Id;
                     purchaseDTO.PurchaseDate = purchase.PurchaseDate;
                     purchaseDTO.ClientId = purchase.ClientId;
+                    purchaseDTO.SeparatePlanPercentage = purchase.SeparatePlan != null ? purchase.SeparatePlan.SeparatePlanPercentage : null;
                     purchaseDTO.PurchaseDetails = purchase.ClientProductPurchaseDetails != null ? purchase.ClientProductPurchaseDetails.Select(y => new ClientProductPurchaseDetailDTO
                     {
                         ProductId = y.ProductId,
@@ -152,6 +155,7 @@ namespace BlazorAppServer.Repositories
                     ClientId = x.ClientId,
                     Id = x.Id,
                     PurchaseDate = x.PurchaseDate,
+                    SeparatePlanPercentage = x.SeparatePlan != null ? x.SeparatePlan.SeparatePlanPercentage : null,
                     PurchaseDetails = x.ClientProductPurchaseDetails != null ? x.ClientProductPurchaseDetails.Select(y => new ClientProductPurchaseDetailDTO
                     {
                         ProductId = y.ProductId,
@@ -163,7 +167,7 @@ namespace BlazorAppServer.Repositories
                 return allClientPurchases;
             }
         }
-        async Task<ResponsePayload> IClientRepository.PurchaseProduct(List<CreateEditClientProductPurchaseDetailDTO> clientProductPurchaseDetailDTOs, int clientId)
+        async Task<ResponsePayload> IClientRepository.PurchaseProduct(List<CreateEditClientProductPurchaseDetailDTO> clientProductPurchaseDetailDTOs, int clientId, int? separatePlanId)
         {
             var response = new ResponsePayload();
             try
@@ -183,11 +187,12 @@ namespace BlazorAppServer.Repositories
                         {
                             ClientId = clientId,
                             PurchaseDate = DateTime.Now,
+                            SeparatePlanId = separatePlanId
                         };
                         foreach (var item in clientProductPurchaseDetailDTOs)
                         {
-                            var isProductPreviouslyCreated = await context.Product.AnyAsync(x => x.Id == item.ProductId);
-                            if (!isProductPreviouslyCreated)
+                            var productPreviouslyCreated = await context.Product.FirstOrDefaultAsync(x => x.Id == item.ProductId);
+                            if (productPreviouslyCreated == null)
                             {
                                 response.Status = 404;
                                 throw new Exception("Product does not exists");
@@ -202,12 +207,14 @@ namespace BlazorAppServer.Repositories
                                     ClientProductPurchaseId = purchase.Id
                                 };
                                 purchaseList.Add(clientProductPurchaseDetailDTO);
+                                productPreviouslyCreated.Quantity = productPreviouslyCreated.Quantity - clientProductPurchaseDetailDTO.QuantityPurchase;
                             }
                         }
                         purchase.ClientProductPurchaseDetails = purchaseList;
                         await context.AddAsync(purchase);
                         await context.SaveChangesAsync();
                         response.Status = 201;
+                        response.Message = "Purchase Created";
                     }
                 }
             }
@@ -219,7 +226,7 @@ namespace BlazorAppServer.Repositories
             return response;
         }
 
-        async Task<ResponsePayload> IClientRepository.SeparateProducts(List<CreateEditClientSeparationProductDetailDTO> clientSeparationProductDetailDTOs, int clientId)
+        async Task<ResponsePayload> IClientRepository.SeparateProducts(List<CreateEditClientSeparationProductDetailDTO> clientSeparationProductDetailDTOs, int clientId, int? promotionId)
         {
             var response = new ResponsePayload();
             try
@@ -239,7 +246,8 @@ namespace BlazorAppServer.Repositories
                         var separation = new ClientSeparationProduct
                         {
                             ClientId = clientId,
-                            CreatedDate = DateTime.Now,        
+                            CreatedDate = DateTime.Now,
+                            PromotionId = promotionId
                         };
                         foreach (var item in clientSeparationProductDetailDTOs)
                         {
@@ -253,23 +261,20 @@ namespace BlazorAppServer.Repositories
                             {
                                 var clientseparationProductDTO = new ClientSeparationProductDetail
                                 {
-                                    ProductId = item.ProductId.Value,
-                                    SeparatedQuantity = item.SeparatedQuantity.Value,
-                                    
+                                    ProductId = item.ProductId,
+                                    SeparatedQuantity = item.SeparatedQuantity,
+                                    ClientSeparationProductId = separation.Id
                                 };
                                 separatedProductsList.Add(clientseparationProductDTO);
                                 total += productPreviouslyCreated.Price * clientseparationProductDTO.SeparatedQuantity;
+                                productPreviouslyCreated.Quantity = productPreviouslyCreated.Quantity - clientseparationProductDTO.SeparatedQuantity;
                             }
-                        }
-                        var promo = await context.Promotion.FirstOrDefaultAsync(x => total > x.MinimalAmount && total < x.MaximalAmount);
-                        if(promo != null)
-                        {
-                            separation.PromotionId = promo.Id;
                         }
                         separation.ClientSeparationProductDetails = separatedProductsList;
                         await context.AddAsync(separation);
                         await context.SaveChangesAsync();
                         response.Status = 201;
+                        response.Message = "Separation Created";
                     }
                 }
             }

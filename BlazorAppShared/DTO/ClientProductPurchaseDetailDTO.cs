@@ -17,6 +17,7 @@ namespace BlazorAppShared.DTO
     public class CreateEditClientProductPurchaseDetailDTO
     {
         [Required]
+        [Range(1, long.MaxValue, ErrorMessage = "Only positive number allowed")]
         public int QuantityPurchase { get; set; } = 1;
         [Required]
         public decimal CurrentProductPrice { get; set; }
@@ -28,6 +29,7 @@ namespace BlazorAppShared.DTO
         public int? Id { get; set;}
         public int ClientId { get; set; }
         public DateTime PurchaseDate { get; set;}
+        public decimal? SeparatePlanPercentage { get; set; }
         public List<ClientProductPurchaseDetailDTO>? PurchaseDetails { get; set;}
     }
 }

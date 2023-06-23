@@ -11,7 +11,9 @@ namespace BlazorAppShared.Models
         public int Id { get; set; }
         public DateTime PurchaseDate { get; set; }
         public int ClientId { get; set; }
+        public int? SeparatePlanId { get; set; }
         public virtual Client Client { get; set; }
+        public virtual SeparatePlan SeparatePlan { get; set; }
         public virtual List<ClientProductPurchaseDetail>? ClientProductPurchaseDetails { get; set; }
     }
 }

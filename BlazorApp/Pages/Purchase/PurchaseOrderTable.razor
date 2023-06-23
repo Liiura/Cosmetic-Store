@@ -1,0 +1,55 @@
+﻿@page "/CurrentPurchases"
+@using BlazorAppShared.DTO;
+@using BlazorApp.Interfaces
+@using CurrieTechnologies.Razor.SweetAlert2;
+@inject IClientService clientService
+@inject SweetAlertService Swal;
+@inject IJSRuntime JS;
+<h3>My Purchases</h3>
+@if(purchases == null)
+{
+    <strong>Loading data...</strong>
+}
+else
+{
+    <table class="table table-dark table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Purchase Date</th>
+                <th scope="col">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var purchase in purchases)
+            {
+                decimal? total = purchase.PurchaseDetails.Sum(x => x.QuantityPurchase * x.CurrentProductPrice)*(1-(purchase.SeparatePlanPercentage != null ? purchase.SeparatePlanPercentage / 100 : 0));
+                <tr>
+                    <th scope="row">@purchase.Id</th>
+                    <td>@purchase.PurchaseDate</td>
+                    <td>$@total</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    List<ClientProductPurchaseDTO>? purchases = null;
+    protected override async Task OnInitializedAsync()
+    {
+        var visitorCookie = await GetCookie("visitorId");
+        var getClient = await clientService.GetClient(visitorCookie);
+        if (getClient.Status >= 200 && getClient.Status < 300)
+        {
+            purchases = await clientService.GetAllClientPurchaseProducts(getClient.Value.Id.Value);
+        }
+        else
+        {
+            await Swal.FireAsync("Client", getClient.Message, SweetAlertIcon.Error);
+        }
+    }
+    public async Task<string> GetCookie(string cookieName)
+    {
+        return await JS.InvokeAsync<string>("eval", $"document.cookie.split(';').find(c => c.trim().startsWith('{cookieName}='))?.split('=')[1]");
+    }
+}

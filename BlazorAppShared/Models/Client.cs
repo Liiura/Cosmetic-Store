@@ -12,7 +12,7 @@ namespace BlazorAppShared.Models
         public string Name { get; set; }
         public DateTime CreatedDate { get; set; }
         public virtual List<ClientProductPurchase>? ClientProductDetails { get; set; }
-        public virtual List<ClientSeparationProductDetail>? ClientSeparationProductDetails { get; set; }
+        public virtual List<ClientSeparationProduct>? ClientSeparationProductDetails { get; set; }
 
     }
 }

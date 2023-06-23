@@ -1,0 +1,122 @@
+﻿@page "/SeparateProducts"
+@using BlazorAppShared.DTO
+@using BlazorApp.Interfaces;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using System.Text.Json;
+@inject SweetAlertService Swal;
+@inject IClientService clientService;
+@inject IProductService productService;
+@inject IPromotionService promotionService;
+@inject IJSRuntime JS;
+<h3>Separate Cosmetics</h3>
+@if (products == null)
+{
+    <strong>Loading data...</strong>
+}
+else
+{
+    if (isACurrentSeparation)
+    {
+        <a class="btn btn-success" href="SeparatedOrder">See my separation</a>
+        <br />
+    }
+    <p>All available promotions for separations</p>
+    <ol class="list-group list-group-numbered">
+        @foreach (var item in promotions)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+                <div class="ms-2 me-auto">
+                    <div class="fw-bold">@item.PromotionName</div>
+                    For separation amounts greater or equal to @item.MinimalAmount and less @item.MaximalAmount you have a %@item.PromotionPercentage of discount
+                </div>
+            </li>
+        }
+    </ol>
+    <br />
+    <div class="row row-cols-1 row-cols-md-2">
+        @foreach (var item in products)
+        {
+            var separatedProductDetail = separateProductDetails.FirstOrDefault(p => p.ProductId == item.Id);
+
+            if (separatedProductDetail == null)
+            {
+                separatedProductDetail = new CreateEditClientSeparationProductDetailDTO { ProductId = item.Id.Value };
+                separateProductDetails.Add(separatedProductDetail);
+            }
+            <div class="card" style="width: 18rem; margin-right: 5px; margin-bottom: 5px">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Name</h5>
+                    <hr style="margin-top: -3px" />
+                    <p class="card-text"><strong>Price</strong> @item.Price</p>
+                    <EditForm Model="separatedProductDetail" OnValidSubmit="@(() => OnValidSubmit(separatedProductDetail) )">
+                        <DataAnnotationsValidator></DataAnnotationsValidator>
+                        <div class="mb-3">
+                            <input type="hidden" id="ProductId_@item.Id" name="ProductId" value="@item.Id" />
+                            <label class="form-label">Quantity</label>
+                            <InputNumber class="form-control" @bind-Value="separatedProductDetail.SeparatedQuantity"></InputNumber>
+                            <ValidationMessage For="@(() => separatedProductDetail.SeparatedQuantity)"></ValidationMessage>
+                        </div>
+                        <button type="submit" class="btn btn-success">Separate</button>
+                    </EditForm>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    List<ProductDTO>? products = null;
+    bool isACurrentSeparation = false;
+    List<PromotionDTO> promotions = new List<PromotionDTO>();
+    List<CreateEditClientSeparationProductDetailDTO> separateProductDetails = new List<CreateEditClientSeparationProductDetailDTO>();
+    protected override async Task OnInitializedAsync()
+    {
+        products = await productService.GetAllProducts();
+        promotions = await promotionService.GetAllPromotions();
+        isACurrentSeparation = !string.IsNullOrEmpty((await JS.InvokeAsync<string>("localStorage.getItem", "separatedOrder")));
+    }
+    private async Task OnValidSubmit(CreateEditClientSeparationProductDetailDTO separateProductDetail)
+    {
+        var productToSeparate = await productService.GetProductById(separateProductDetail.ProductId);
+        string successMessage = "Cosmetic was separated";
+        if (productToSeparate.Status >= 200 && productToSeparate.Status < 300)
+        {
+            if (separateProductDetail.SeparatedQuantity <= productToSeparate.Value.Quantity)
+            {
+                productToSeparate.Value.Quantity = separateProductDetail.SeparatedQuantity;
+                string localStorageSeparateOrderString = await JS.InvokeAsync<string>("localStorage.getItem", "separatedOrder");
+                List<ProductDTO>? localStorageSeparateOrderList = null;
+                if (!string.IsNullOrEmpty(localStorageSeparateOrderString))
+                {
+                    localStorageSeparateOrderList = JsonSerializer.Deserialize<List<ProductDTO>>(localStorageSeparateOrderString);
+
+                    var purchaseProductPreviously = localStorageSeparateOrderList.FirstOrDefault(x => x.Id == separateProductDetail.ProductId);
+                    if (purchaseProductPreviously == null)
+                    {
+                        localStorageSeparateOrderList.Add(productToSeparate.Value);
+                    }
+                    else
+                    {
+                        localStorageSeparateOrderList.First(x => x.Id == separateProductDetail.ProductId).Quantity += separateProductDetail.SeparatedQuantity;
+                        successMessage = "The cosmetic was previously separated so the quantity was updated";
+                    }
+                    await JS.InvokeVoidAsync("localStorage.setItem", "separatedOrder", JsonSerializer.Serialize(localStorageSeparateOrderList));
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("localStorage.setItem", "separatedOrder", JsonSerializer.Serialize(new List<ProductDTO> { productToSeparate.Value }));
+                }
+                isACurrentSeparation = true;
+                await Swal.FireAsync("Cosmetic", successMessage, SweetAlertIcon.Success);
+            }
+            else
+            {
+                await Swal.FireAsync("Cosmetic", "Sorry,There is not stock of this product with the quantity that you need", SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            await Swal.FireAsync("Cosmetic", productToSeparate.Message, SweetAlertIcon.Error);
+        }
+    }
+}

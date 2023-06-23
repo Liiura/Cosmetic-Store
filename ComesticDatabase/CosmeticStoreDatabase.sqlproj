@@ -69,6 +69,7 @@
     <Build Include="ClientProductPurchaseDetail.sql" />
     <Build Include="SellDepartment.sql" />
     <Build Include="GetAllColors.sql" />
+    <Build Include="SeparatePlan.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="ComesticDatabase.refactorlog" />
