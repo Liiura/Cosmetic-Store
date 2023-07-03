@@ -5,5 +5,5 @@
     [CreatedDate] DATETIME NOT NULL, 
     [Quantity] INT NOT NULL, 
     [Price] MONEY NOT NULL, 
-    [SellDepartmentId] INT NOT NULL
+    [SellDepartmentId] INT FOREIGN KEY REFERENCES SellDepartment(Id) NOT NULL
 )
